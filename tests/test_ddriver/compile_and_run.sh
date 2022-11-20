@@ -6,6 +6,8 @@ cd build || exit
 
 cmake ..
 
+cd ..
+
 make
 
 ./ddriver_test

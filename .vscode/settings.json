@@ -4,5 +4,7 @@
         "*.wxss": "css",
         "*.wxs": "javascript",
         "ioctl.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled",
+    "cmake.sourceDirectory": "${workspaceFolder}/fs/newfs"
 }
