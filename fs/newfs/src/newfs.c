@@ -24,17 +24,17 @@ static struct fuse_operations operations = {
 	.getattr = newfs_getattr,				 /* 获取文件属性，类似stat，必须完成 */
 	.readdir = newfs_readdir,				 /* 填充dentrys */
 	.mknod = newfs_mknod,					 /* 创建文件，touch相关 */
-	.write = NULL,								  	 /* 写入文件 */
-	.read = NULL,								  	 /* 读文件 */
+	.write = newfs_write,								  	 /* 写入文件 */
+	.read = newfs_read,								  	 /* 读文件 */
 	.utimens = newfs_utimens,				 /* 修改时间，忽略，避免touch报错 */
-	.truncate = NULL,						  		 /* 改变文件大小 */
+	.truncate = newfs_truncate,						  		 /* 改变文件大小 */
 	.unlink = NULL,							  		 /* 删除文件 */
 	.rmdir	= NULL,							  		 /* 删除目录， rm -r */
 	.rename = NULL,							  		 /* 重命名，mv */
 
 	.open = NULL,							
 	.opendir = NULL,
-	.access = NULL
+	.access = newfs_access
 };
 /******************************************************************************
 * SECTION: 必做函数实现
@@ -453,7 +453,7 @@ int newfs_rename(const char* from, const char* to) {
  */
 int newfs_open(const char* path, struct fuse_file_info* fi) {
 	/* 选做 */
-	return 0;
+	return NEWFS_ERROR_NONE;
 }
 
 /**
@@ -465,7 +465,7 @@ int newfs_open(const char* path, struct fuse_file_info* fi) {
  */
 int newfs_opendir(const char* path, struct fuse_file_info* fi) {
 	/* 选做 */
-	return 0;
+	return NEWFS_ERROR_NONE;
 }
 
 /**
@@ -477,7 +477,23 @@ int newfs_opendir(const char* path, struct fuse_file_info* fi) {
  */
 int newfs_truncate(const char* path, off_t offset) {
 	/* 选做 */
-	return 0;
+	boolean	is_find, is_root;
+	struct newfs_dentry* dentry = newfs_lookup(path, &is_find, &is_root);
+	struct newfs_inode*  inode;
+	
+	if (is_find == FALSE) {
+		return -NEWFS_ERROR_NOTFOUND;
+	}
+	
+	inode = dentry->inode;
+
+	if (NEWFS_IS_DIR(inode)) {
+		return -NEWFS_ERROR_ISDIR;
+	}
+
+	inode->size = offset;
+
+	return NEWFS_ERROR_NONE;
 }
 
 
@@ -495,7 +511,31 @@ int newfs_truncate(const char* path, off_t offset) {
  */
 int newfs_access(const char* path, int type) {
 	/* 选做: 解析路径，判断是否存在 */
-	return 0;
+	boolean	is_find, is_root;
+	boolean is_access_ok = FALSE;
+	struct newfs_dentry* dentry = newfs_lookup(path, &is_find, &is_root);
+	struct newfs_inode*  inode;
+
+	switch (type)
+	{
+	case R_OK:
+		is_access_ok = TRUE;
+		break;
+	case F_OK:
+		if (is_find) {
+			is_access_ok = TRUE;
+		}
+		break;
+	case W_OK:
+		is_access_ok = TRUE;
+		break;
+	case X_OK:
+		is_access_ok = TRUE;
+		break;
+	default:
+		break;
+	}
+	return is_access_ok ? NEWFS_ERROR_NONE : -NEWFS_ERROR_ACCESS;
 }	
 /******************************************************************************
 * SECTION: FUSE入口

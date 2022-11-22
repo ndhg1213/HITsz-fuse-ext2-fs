@@ -100,7 +100,8 @@ function mount_fuse() {
 }
 
 function check_mount() {
-    if ! mount | grep "${PROJECT_NAME}" >/dev/null; then
+    ABS_PATH=$(realpath "$MNTPOINT")
+    if ! mount | grep "${ABS_PATH}" >/dev/null; then
         return 1
     fi
     return 0

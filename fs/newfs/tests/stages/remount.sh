@@ -43,7 +43,6 @@ function check_bm() {
     fi
     return 1
 }
-
 clean_mount
 clean_ddriver
 

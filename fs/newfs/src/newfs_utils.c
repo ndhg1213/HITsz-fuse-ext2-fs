@@ -598,7 +598,7 @@ int newfs_umount() {
 
     //记录超级块关于data位图相关信息
     newfs_super_d.map_data_blks      = newfs_super.map_data_blks;
-    newfs_super_d.map_inode_offset    = newfs_super.map_inode_offset;
+    newfs_super_d.map_data_offset    = newfs_super.map_data_offset;
 
     //记录超级块关于inode和data相关信息
     newfs_super_d.inode_offset         = newfs_super.inode_offset;
